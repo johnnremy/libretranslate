@@ -14,44 +14,14 @@ RUN pip install --no-cache-dir \
     libretranslate \
     argos-translate-files
 
-# Create directories for models and data
-RUN mkdir -p /app/models /app/data
+# Create directories for models
+RUN mkdir -p /app/models
 
-# Set environment variables
-ENV LT_SHARED_STORAGE=/app/data
+# Set environment variables (remove problematic storage setting)
 ENV ARGOS_TRANSLATE_MODELS_DIR=/app/models
 
 # Pre-install translation models using argostranslate
-RUN python3 -c "
-import argostranslate.package
-
-# Update package index
-argostranslate.package.update_package_index()
-
-# Get available packages
-available_packages = argostranslate.package.get_available_packages()
-
-# Install common language pairs
-language_pairs = [
-    ('en', 'fr'),  # English to French
-    ('fr', 'en'),  # French to English
-    # ('en', 'es'),  # English to Spanish
-    # ('es', 'en'),  # Spanish to English
-    # ('en', 'de'),  # English to German
-    # ('de', 'en'),  # German to English
-]
-
-for from_code, to_code in language_pairs:
-    package = next(
-        (p for p in available_packages if p.from_code == from_code and p.to_code == to_code),
-        None
-    )
-    if package:
-        print(f'Installing {from_code} -> {to_code}')
-        argostranslate.package.install_from_path(package.download())
-    else:
-        print(f'Package {from_code} -> {to_code} not found')
-"
+RUN python3 -c "import argostranslate.package; argostranslate.package.update_package_index(); available_packages = argostranslate.package.get_available_packages(); [argostranslate.package.install_from_path(p.download()) for p in available_packages if (p.from_code, p.to_code) in [('en', 'fr'), ('fr', 'en')]]"
 
 # Expose port
 EXPOSE 5000
