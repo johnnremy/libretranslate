@@ -1,5 +1,8 @@
 FROM libretranslate/libretranslate:latest
 
+# Install missing argos-translate-files dependency
+RUN pip install argos-translate-files
+
 # Pre-install common translation models during build
 RUN python3 -m libretranslate --install-models en,fr
 
