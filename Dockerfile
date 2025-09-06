@@ -1,9 +1,9 @@
-FROM libretranslate/libretranslate:latest
+FROM libretranslate/libretranslate:v1.3.2
 
-# Install missing argos-translate-files dependency
-RUN pip install argos-translate-files
+# Ensure all dependencies are installed
+RUN pip install --no-cache-dir flask argos-translate-files
 
-# Pre-install common translation models during build
+# Pre-install common translation models during build  
 RUN python3 -m libretranslate --install-models en,fr
 
 # Expose the port
