@@ -21,8 +21,37 @@ RUN mkdir -p /app/models /app/data
 ENV LT_SHARED_STORAGE=/app/data
 ENV ARGOS_TRANSLATE_MODELS_DIR=/app/models
 
-# Pre-install translation models
-RUN libretranslate --install-models en,fr
+# Pre-install translation models using argostranslate
+RUN python3 -c "
+import argostranslate.package
+
+# Update package index
+argostranslate.package.update_package_index()
+
+# Get available packages
+available_packages = argostranslate.package.get_available_packages()
+
+# Install common language pairs
+language_pairs = [
+    ('en', 'fr'),  # English to French
+    ('fr', 'en'),  # French to English
+    # ('en', 'es'),  # English to Spanish
+    # ('es', 'en'),  # Spanish to English
+    # ('en', 'de'),  # English to German
+    # ('de', 'en'),  # German to English
+]
+
+for from_code, to_code in language_pairs:
+    package = next(
+        (p for p in available_packages if p.from_code == from_code and p.to_code == to_code),
+        None
+    )
+    if package:
+        print(f'Installing {from_code} -> {to_code}')
+        argostranslate.package.install_from_path(package.download())
+    else:
+        print(f'Package {from_code} -> {to_code} not found')
+"
 
 # Expose port
 EXPOSE 5000
